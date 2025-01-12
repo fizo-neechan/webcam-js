@@ -267,7 +267,7 @@ class ImageProcessor {
   applyColorspaceFace(faceRegion) {
     const imageData = this.contexts.faceDetection.getImageData(faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height);
 
-    this.rgbToYCbCr(imageData.data)
+    this.rgbToYCbCr(imageData.data);
 
     this.contexts.faceDetection.putImageData(imageData, faceRegion.x, faceRegion.y);
   }
@@ -311,48 +311,73 @@ class ImageProcessor {
 
   applyPixelateFace(faceRegion) {
     const ctx = this.contexts.faceDetection;
-    const blockSize = 5;
+    const blockSize = 15;
 
-    // Get face region data
-    const imageData = ctx.getImageData(faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height);
-    const data = imageData.data;
+    // Create a temporary canvas for pixel manipulation
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = faceRegion.width;
+    tempCanvas.height = faceRegion.height;
+    const tempCtx = tempCanvas.getContext("2d");
 
-    // Process each block
+    // Copy face region to temporary canvas
+    tempCtx.drawImage(
+      ctx.canvas,
+      faceRegion.x,
+      faceRegion.y,
+      faceRegion.width,
+      faceRegion.height,
+      0,
+      0,
+      faceRegion.width,
+      faceRegion.height
+    );
+
+    // Process blocks
     for (let y = 0; y < faceRegion.height; y += blockSize) {
       for (let x = 0; x < faceRegion.width; x += blockSize) {
-        let r = 0,
-          g = 0,
-          b = 0,
-          count = 0;
+        // Get the pixel data for this block
+        const blockData = tempCtx.getImageData(
+          x,
+          y,
+          Math.min(blockSize, faceRegion.width - x),
+          Math.min(blockSize, faceRegion.height - y)
+        );
 
-        // Calculate average color for block
-        for (let by = 0; by < blockSize && y + by < faceRegion.height; by++) {
-          for (let bx = 0; bx < blockSize && x + bx < faceRegion.width; bx++) {
-            const idx = ((y + by) * faceRegion.width + (x + bx)) * 4;
-            r += data[idx];
-            g += data[idx + 1];
-            b += data[idx + 2];
-            count++;
-          }
+        // Calculate average RGB values
+        let sumR = 0,
+          sumG = 0,
+          sumB = 0;
+        let count = 0;
+
+        for (let i = 0; i < blockData.data.length; i += 4) {
+          sumR += blockData.data[i];
+          sumG += blockData.data[i + 1];
+          sumB += blockData.data[i + 2];
+          count++;
         }
 
-        // Set average color for entire block
-        r = Math.floor(r / count);
-        g = Math.floor(g / count);
-        b = Math.floor(b / count);
+        const avgR = Math.round(sumR / count);
+        const avgG = Math.round(sumG / count);
+        const avgB = Math.round(sumB / count);
 
-        for (let by = 0; by < blockSize && y + by < faceRegion.height; by++) {
-          for (let bx = 0; bx < blockSize && x + bx < faceRegion.width; bx++) {
-            const idx = ((y + by) * faceRegion.width + (x + bx)) * 4;
-            data[idx] = r;
-            data[idx + 1] = g;
-            data[idx + 2] = b;
-          }
-        }
+        // Fill the block with the average color
+        tempCtx.fillStyle = `rgb(${avgR}, ${avgG}, ${avgB})`;
+        tempCtx.fillRect(x, y, blockSize, blockSize);
       }
     }
 
-    ctx.putImageData(imageData, faceRegion.x, faceRegion.y);
+    // Draw the pixelated result back to the main canvas
+    ctx.drawImage(
+      tempCanvas,
+      0,
+      0,
+      faceRegion.width,
+      faceRegion.height,
+      faceRegion.x,
+      faceRegion.y,
+      faceRegion.width,
+      faceRegion.height
+    );
   }
 
   async handleKeyPress(event) {
@@ -374,7 +399,6 @@ class ImageProcessor {
           this.applyColorspaceFace(face);
           break;
         case "4":
-          // Reset face detection canvas
           this.applyPixelateFace(face);
           break;
       }
