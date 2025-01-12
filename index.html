@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Processing Application</title>
+    <link rel="stylesheet" href="css/styles.css">
+
+    <script src="js/ImageProcessor.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="controls">
+        <button id="startCamera">Start Camera</button>
+        <button id="captureImage">Capture Image</button>
+        <button id="processImage">Process Image</button>
+
+        <div class="slider-container">
+          <label for="redThreshold">Red Threshold:</label>
+          <input type="range" id="redThreshold" min="0" max="255" value="128" />
+          <span id="redThresholdValue">128</span>
+        </div>
+
+        <div class="slider-container">
+          <label for="greenThreshold">Green Threshold:</label>
+          <input type="range" id="greenThreshold" min="0" max="255" value="128" />
+          <span id="greenThresholdValue">128</span>
+        </div>
+
+        <div class="slider-container">
+          <label for="blueThreshold">Blue Threshold:</label>
+          <input type="range" id="blueThreshold" min="0" max="255" value="128" />
+          <span id="blueThresholdValue">128</span>
+        </div>
+
+        <div class="slider-container">
+          <label for="colorSpace1Threshold">Color Space 1 Threshold:</label>
+          <input type="range" id="colorSpace1Threshold" min="0" max="255" value="128" />
+          <span id="colorSpace1ThresholdValue">128</span>
+        </div>
+
+        <div class="slider-container">
+          <label for="colorSpace2Threshold">Color Space 2 Threshold:</label>
+          <input type="range" id="colorSpace2Threshold" min="0" max="255" value="128" />
+          <span id="colorSpace2ThresholdValue">128</span>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="cell">
+          <div class="cell-title">Webcam Image</div>
+          <video id="webcam" autoplay playsinline></video>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Grayscale + Brightness</div>
+          <canvas id="grayscale"></canvas>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Red Channel</div>
+          <canvas id="redChannel"></canvas>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Green Channel</div>
+          <canvas id="greenChannel"></canvas>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Blue Channel</div>
+          <canvas id="blueChannel"></canvas>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Red Threshold</div>
+          <canvas id="redThresholdCanvas"></canvas>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Green Threshold</div>
+          <canvas id="greenThresholdCanvas"></canvas>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Blue Threshold</div>
+          <canvas id="blueThresholdCanvas"></canvas>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Webcam (Repeat)</div>
+          <canvas id="webcamRepeat"></canvas>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Color Space 1</div>
+          <canvas id="colorSpace1"></canvas>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Color Space 2</div>
+          <canvas id="colorSpace2"></canvas>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Face Detection</div>
+          <canvas id="faceDetection"></canvas>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Threshold Space 1</div>
+          <canvas id="thresholdSpace1"></canvas>
+        </div>
+        <div class="cell">
+          <div class="cell-title">Threshold Space 2</div>
+          <canvas id="thresholdSpace2"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/face-api.js/0.22.2/face-api.min.js"></script>
+  </body>
+</html>
