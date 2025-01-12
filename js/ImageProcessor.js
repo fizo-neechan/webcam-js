@@ -1,4 +1,6 @@
-exportclass ImageProcessor {
+class ImageProcessor {
+  detections = [];
+
   constructor() {
     this.initializeElements();
     this.setupEventListeners();
@@ -54,11 +56,28 @@ exportclass ImageProcessor {
   }
 
   async loadFaceDetectionModels() {
-    await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
-      faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
-      faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
-    ]);
+    try {
+      // Wait for face-api.js to be loaded
+      await new Promise((resolve) => {
+        if (window.faceapi) {
+          resolve();
+        } else {
+          // Wait for script to load
+          document.querySelector('script[src*="face-api"]').addEventListener("load", resolve);
+        }
+      });
+
+      // Load models from CDN with correct path structure
+      const modelBaseUrl = "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights";
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(modelBaseUrl),
+        faceapi.nets.faceLandmark68Net.loadFromUri(modelBaseUrl),
+        faceapi.nets.faceRecognitionNet.loadFromUri(modelBaseUrl),
+      ]);
+      console.log("Face detection models loaded successfully");
+    } catch (error) {
+      console.error("Error loading face detection models:", error);
+    }
   }
 
   async startCamera() {
@@ -170,10 +189,10 @@ exportclass ImageProcessor {
     ctx.drawImage(this.webcamVideo, 0, 0, 160, 120);
 
     // Detect faces
-    const detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions());
+    this.detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions());
 
     // Draw detection boxes
-    detections.forEach((detection) => {
+    this.detections.forEach((detection) => {
       const { x, y, width, height } = detection.box;
       ctx.strokeStyle = "#00ff00";
       ctx.lineWidth = 2;
@@ -181,6 +200,7 @@ exportclass ImageProcessor {
     });
   }
 
+  // Color space conversion helpers
   rgbToHSV(data) {
     for (let i = 0; i < data.length; i += 4) {
       const r = data[i] / 255;
@@ -231,12 +251,7 @@ exportclass ImageProcessor {
 
   // Face effect methods
   applyGrayscaleFace(faceRegion) {
-    const imageData = this.contexts.faceDetection.getImageData(
-      faceRegion.x,
-      faceRegion.y,
-      faceRegion.width,
-      faceRegion.height
-    );
+    const imageData = this.contexts.faceDetection.getImageData(faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height);
     const data = imageData.data;
 
     for (let i = 0; i < data.length; i += 4) {
@@ -245,6 +260,14 @@ exportclass ImageProcessor {
       data[i + 1] = gray;
       data[i + 2] = gray;
     }
+
+    this.contexts.faceDetection.putImageData(imageData, faceRegion.x, faceRegion.y);
+  }
+
+  applyColorspaceFace(faceRegion) {
+    const imageData = this.contexts.faceDetection.getImageData(faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height);
+
+    this.rgbToYCbCr(imageData.data)
 
     this.contexts.faceDetection.putImageData(imageData, faceRegion.x, faceRegion.y);
   }
@@ -333,13 +356,12 @@ exportclass ImageProcessor {
   }
 
   async handleKeyPress(event) {
-    const detections = await faceapi.detectAllFaces(
-      this.canvasElements.faceDetection,
-      new faceapi.TinyFaceDetectorOptions()
-    );
+    console.log("Pressed", event.key);
+    // this.detections = await faceapi.detectAllFaces(this.canvasElements.faceDetection, new faceapi.TinyFaceDetectorOptions());
 
-    if (detections.length > 0) {
-      const face = detections[0].box;
+    console.log(this.detections);
+    if (this.detections.length > 0) {
+      const face = this.detections[0].box;
 
       switch (event.key) {
         case "1":
@@ -349,13 +371,21 @@ exportclass ImageProcessor {
           this.applyBlurFace(face);
           break;
         case "3":
-          this.applyPixelateFace(face);
+          this.applyColorspaceFace(face);
           break;
         case "4":
           // Reset face detection canvas
-          this.processFaceDetection();
+          this.applyPixelateFace(face);
           break;
       }
     }
   }
+}
+
+// DONT CHANGE
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { ImageProcessor };
+} else {
+  window.ImageProcessor = ImageProcessor;
 }
