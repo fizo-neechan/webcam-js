@@ -108,6 +108,8 @@ class ImageProcessor {
     this.processThresholds();
     this.processColorSpaces();
     this.processFaceDetection();
+    this.processHSVThreshold();
+    this.processThresholdFromColorSpace2();
   }
 
   processGrayscaleAndBrightness() {
@@ -179,6 +181,79 @@ class ImageProcessor {
 
     ctx1.putImageData(imageData1, 0, 0);
     ctx2.putImageData(imageData2, 0, 0);
+  }
+
+  processHSVThreshold() {
+    const ctx = this.contexts.thresholdSpace1;
+    const threshold = document.getElementById("colorSpace1Threshold").value;
+
+    // Create new ImageData for thresholded result
+    const imageData = ctx.createImageData(160, 120);
+    const data = imageData.data;
+
+    // Apply threshold to Value component of HSV
+    for (let i = 0; i < this.hsvData.length; i += 3) {
+      const h = this.hsvData[i];
+      const s = this.hsvData[i + 1];
+      const v = this.hsvData[i + 2];
+
+      // Calculate output pixel index (4 components: R,G,B,A)
+      const pixelIndex = (i / 3) * 4;
+
+      // Threshold on Value component
+      if (v > threshold) {
+        // If above threshold, keep original HSV converted back to RGB
+        const rgb = this.hsvToRgb(h, s, v);
+        data[pixelIndex] = rgb.r;
+        data[pixelIndex + 1] = rgb.g;
+        data[pixelIndex + 2] = rgb.b;
+      } else {
+        // If below threshold, set to black
+        data[pixelIndex] = 0;
+        data[pixelIndex + 1] = 0;
+        data[pixelIndex + 2] = 0;
+      }
+      data[pixelIndex + 3] = 255; // Alpha channel
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  processThresholdFromColorSpace2() {
+    const ctx = this.contexts.thresholdSpace2; // Get context for the threshold output
+    const colorSpace2Ctx = this.contexts.colorSpace2; // Get context of YCbCr image
+
+    // Get threshold value from slider
+    const threshold = document.getElementById("colorSpace2Threshold").value;
+
+    // Get YCbCr image data
+    const imageData = colorSpace2Ctx.getImageData(0, 0, 160, 120);
+    const data = imageData.data;
+
+    // Create output image data
+    const outputImageData = ctx.createImageData(160, 120);
+    const outputData = outputImageData.data;
+
+    // Process each pixel
+    for (let i = 0; i < data.length; i += 4) {
+      // Get Y component (stored in red channel)
+      const y = data[i];
+
+      // Apply threshold to Y (luminance) component
+      if (y > threshold) {
+        outputData[i] = 255; // R
+        outputData[i + 1] = 255; // G
+        outputData[i + 2] = 255; // B
+      } else {
+        outputData[i] = 0; // R
+        outputData[i + 1] = 0; // G
+        outputData[i + 2] = 0; // B
+      }
+      outputData[i + 3] = 255; // Alpha
+    }
+
+    // Draw the thresholded image
+    ctx.putImageData(outputImageData, 0, 0);
   }
 
   async processFaceDetection() {
