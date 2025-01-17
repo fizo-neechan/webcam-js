@@ -42,9 +42,6 @@ class ImageProcessor {
     document
       .getElementById("captureImage")
       .addEventListener("click", () => this.captureImage());
-    document
-      .getElementById("processImage")
-      .addEventListener("click", () => this.processImage());
 
     // Threshold sliders
     const sliders = ["red", "green", "blue", "colorSpace1", "colorSpace2"];
