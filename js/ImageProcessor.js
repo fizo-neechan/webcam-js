@@ -36,9 +36,15 @@ class ImageProcessor {
   }
 
   setupEventListeners() {
-    document.getElementById("startCamera").addEventListener("click", () => this.startCamera());
-    document.getElementById("captureImage").addEventListener("click", () => this.captureImage());
-    document.getElementById("processImage").addEventListener("click", () => this.processImage());
+    document
+      .getElementById("startCamera")
+      .addEventListener("click", () => this.startCamera());
+    document
+      .getElementById("captureImage")
+      .addEventListener("click", () => this.captureImage());
+    document
+      .getElementById("processImage")
+      .addEventListener("click", () => this.processImage());
 
     // Threshold sliders
     const sliders = ["red", "green", "blue", "colorSpace1", "colorSpace2"];
@@ -63,12 +69,15 @@ class ImageProcessor {
           resolve();
         } else {
           // Wait for script to load
-          document.querySelector('script[src*="face-api"]').addEventListener("load", resolve);
+          document
+            .querySelector('script[src*="face-api"]')
+            .addEventListener("load", resolve);
         }
       });
 
       // Load models from CDN with correct path structure
-      const modelBaseUrl = "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights";
+      const modelBaseUrl =
+        "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights";
       await Promise.all([
         faceapi.nets.tinyFaceDetector.loadFromUri(modelBaseUrl),
         faceapi.nets.faceLandmark68Net.loadFromUri(modelBaseUrl),
@@ -264,7 +273,10 @@ class ImageProcessor {
     ctx.drawImage(this.webcamVideo, 0, 0, 160, 120);
 
     // Detect faces
-    this.detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions());
+    this.detections = await faceapi.detectAllFaces(
+      canvas,
+      new faceapi.TinyFaceDetectorOptions(),
+    );
 
     // Draw detection boxes
     this.detections.forEach((detection) => {
@@ -326,7 +338,12 @@ class ImageProcessor {
 
   // Face effect methods
   applyGrayscaleFace(faceRegion) {
-    const imageData = this.contexts.faceDetection.getImageData(faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height);
+    const imageData = this.contexts.faceDetection.getImageData(
+      faceRegion.x,
+      faceRegion.y,
+      faceRegion.width,
+      faceRegion.height,
+    );
     const data = imageData.data;
 
     for (let i = 0; i < data.length; i += 4) {
@@ -336,15 +353,28 @@ class ImageProcessor {
       data[i + 2] = gray;
     }
 
-    this.contexts.faceDetection.putImageData(imageData, faceRegion.x, faceRegion.y);
+    this.contexts.faceDetection.putImageData(
+      imageData,
+      faceRegion.x,
+      faceRegion.y,
+    );
   }
 
   applyColorspaceFace(faceRegion) {
-    const imageData = this.contexts.faceDetection.getImageData(faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height);
+    const imageData = this.contexts.faceDetection.getImageData(
+      faceRegion.x,
+      faceRegion.y,
+      faceRegion.width,
+      faceRegion.height,
+    );
 
     this.rgbToYCbCr(imageData.data);
 
-    this.contexts.faceDetection.putImageData(imageData, faceRegion.x, faceRegion.y);
+    this.contexts.faceDetection.putImageData(
+      imageData,
+      faceRegion.x,
+      faceRegion.y,
+    );
   }
 
   applyBlurFace(faceRegion) {
@@ -366,11 +396,16 @@ class ImageProcessor {
       0,
       0,
       faceRegion.width,
-      faceRegion.height
+      faceRegion.height,
     );
 
     ctx.filter = "none";
-    ctx.clearRect(faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height);
+    ctx.clearRect(
+      faceRegion.x,
+      faceRegion.y,
+      faceRegion.width,
+      faceRegion.height,
+    );
     ctx.drawImage(
       tempCanvas,
       0,
@@ -380,13 +415,13 @@ class ImageProcessor {
       faceRegion.x,
       faceRegion.y,
       faceRegion.width,
-      faceRegion.height
+      faceRegion.height,
     );
   }
 
   applyPixelateFace(faceRegion) {
     const ctx = this.contexts.faceDetection;
-    const blockSize = 15;
+    const blockSize = 5;
 
     // Create a temporary canvas for pixel manipulation
     const tempCanvas = document.createElement("canvas");
@@ -404,7 +439,7 @@ class ImageProcessor {
       0,
       0,
       faceRegion.width,
-      faceRegion.height
+      faceRegion.height,
     );
 
     // Process blocks
@@ -415,7 +450,7 @@ class ImageProcessor {
           x,
           y,
           Math.min(blockSize, faceRegion.width - x),
-          Math.min(blockSize, faceRegion.height - y)
+          Math.min(blockSize, faceRegion.height - y),
         );
 
         // Calculate average RGB values
@@ -451,7 +486,7 @@ class ImageProcessor {
       faceRegion.x,
       faceRegion.y,
       faceRegion.width,
-      faceRegion.height
+      faceRegion.height,
     );
   }
 
