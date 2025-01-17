@@ -50,7 +50,7 @@ class ImageProcessor {
       const valueDisplay = document.getElementById(`${type}ThresholdValue`);
       slider.addEventListener("input", (e) => {
         valueDisplay.textContent = e.target.value;
-        this.processImage();
+        // this.processImage();
       });
     });
 
@@ -181,8 +181,7 @@ class ImageProcessor {
     const ctx2 = this.contexts.colorSpace2;
     const imageData1 = ctx1.getImageData(0, 0, 160, 120);
     const imageData2 = ctx2.getImageData(0, 0, 160, 120);
-
-    this.rgbToHSV(imageData1.data);
+(imageData1.data);
     this.rgbToYCbCr(imageData2.data);
 
     ctx1.putImageData(imageData1, 0, 0);
@@ -197,11 +196,13 @@ class ImageProcessor {
     const imageData = ctx.createImageData(160, 120);
     const data = imageData.data;
 
+    const hsvData = ctx.getImageData(0, 0, 160, 120).data;
+
     // Apply threshold to Value component of HSV
-    for (let i = 0; i < this.hsvData.length; i += 3) {
-      const h = this.hsvData[i];
-      const s = this.hsvData[i + 1];
-      const v = this.hsvData[i + 2];
+    for (let i = 0; i < hsvData.length; i += 3) {
+      const h = hsvData[i];
+      const s = hsvData[i + 1];
+      const v = hsvData[i + 2];
 
       // Calculate output pixel index (4 components: R,G,B,A)
       const pixelIndex = (i / 3) * 4;
@@ -314,6 +315,50 @@ class ImageProcessor {
       data[i + 1] = s * 255;
       data[i + 2] = v * 255;
     }
+  }
+
+  hsvToRgb(h, s, v) {
+    h = (h / 255) * 360;
+    s = s / 255;
+    v = v / 255;
+
+    const c = v * s;
+    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const m = v - c;
+
+    let r = 0, g = 0, b = 0;
+
+    if (0 <= h && h < 60) {
+      r = c;
+      g = x;
+      b = 0;
+    } else if (60 <= h && h < 120) {
+      r = x;
+      g = c;
+      b = 0;
+    } else if (120 <= h && h < 180) {
+      r = 0;
+      g = c;
+      b = x;
+    } else if (180 <= h && h < 240) {
+      r = 0;
+      g = x;
+      b = c;
+    } else if (240 <= h && h < 300) {
+      r = x;
+      g = 0;
+      b = c;
+    } else if (300 <= h && h < 360) {
+      r = c;
+      g = 0;
+      b = x;
+    }
+
+    r = Math.round((r + m) * 255);
+    g = Math.round((g + m) * 255);
+    b = Math.round((b + m) * 255);
+
+    return { r, g, b };
   }
 
   rgbToYCbCr(data) {
