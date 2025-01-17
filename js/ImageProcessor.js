@@ -338,7 +338,7 @@ class ImageProcessor {
 
   // Face effect methods
   applyGrayscaleFace(faceRegion) {
-    const imageData = this.contexts.faceDetection.getImageData(
+    const imageData = this.contexts.webcamRepeat.getImageData(
       faceRegion.x,
       faceRegion.y,
       faceRegion.width,
@@ -361,7 +361,7 @@ class ImageProcessor {
   }
 
   applyColorspaceFace(faceRegion) {
-    const imageData = this.contexts.faceDetection.getImageData(
+    const imageData = this.contexts.webcamRepeat.getImageData(
       faceRegion.x,
       faceRegion.y,
       faceRegion.width,
@@ -420,7 +420,8 @@ class ImageProcessor {
   }
 
   applyPixelateFace(faceRegion) {
-    const ctx = this.contexts.faceDetection;
+    const ctx = this.contexts.webcamRepeat;
+    const faceDetectionCtx = this.contexts.faceDetection;
     const blockSize = 5;
 
     // Create a temporary canvas for pixel manipulation
@@ -477,7 +478,7 @@ class ImageProcessor {
     }
 
     // Draw the pixelated result back to the main canvas
-    ctx.drawImage(
+    faceDetectionCtx.drawImage(
       tempCanvas,
       0,
       0,
