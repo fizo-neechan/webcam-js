@@ -1,12 +1,25 @@
+/**
+ * @class ImageProcessor
+ * @classdesc A class to handle image processing tasks including face detection, color space conversions, and various image effects.
+ */
 class ImageProcessor {
   detections = [];
 
+  /**
+   * @constructor
+   * Initializes the ImageProcessor instance by setting up elements, event listeners, and loading face detection models.
+   */
   constructor() {
     this.initializeElements();
     this.setupEventListeners();
     this.loadFaceDetectionModels();
   }
 
+  /**
+   * Initializes all canvas elements and their contexts.
+   * @async
+   * @function
+   */
   async initializeElements() {
     // Initialize all canvas elements
     this.webcamVideo = document.getElementById("webcam");
@@ -35,13 +48,13 @@ class ImageProcessor {
     }
   }
 
+  /**
+   * Sets up event listeners for buttons and sliders.
+   * @function
+   */
   setupEventListeners() {
-    document
-      .getElementById("startCamera")
-      .addEventListener("click", () => this.startCamera());
-    document
-      .getElementById("captureImage")
-      .addEventListener("click", () => this.captureImage());
+    document.getElementById("startCamera").addEventListener("click", () => this.startCamera());
+    document.getElementById("captureImage").addEventListener("click", () => this.captureImage());
 
     // Threshold sliders
     const sliders = ["red", "green", "blue", "colorSpace1", "colorSpace2"];
@@ -58,6 +71,11 @@ class ImageProcessor {
     document.addEventListener("keydown", (e) => this.handleKeyPress(e));
   }
 
+  /**
+   * Loads face detection models from a CDN.
+   * @async
+   * @function
+   */
   async loadFaceDetectionModels() {
     try {
       // Wait for face-api.js to be loaded
@@ -66,15 +84,12 @@ class ImageProcessor {
           resolve();
         } else {
           // Wait for script to load
-          document
-            .querySelector('script[src*="face-api"]')
-            .addEventListener("load", resolve);
+          document.querySelector('script[src*="face-api"]').addEventListener("load", resolve);
         }
       });
 
       // Load models from CDN with correct path structure
-      const modelBaseUrl =
-        "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights";
+      const modelBaseUrl = "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights";
       await Promise.all([
         faceapi.nets.tinyFaceDetector.loadFromUri(modelBaseUrl),
         faceapi.nets.faceLandmark68Net.loadFromUri(modelBaseUrl),
@@ -86,6 +101,11 @@ class ImageProcessor {
     }
   }
 
+  /**
+   * Starts the webcam and streams the video to the video element.
+   * @async
+   * @function
+   */
   async startCamera() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -100,6 +120,10 @@ class ImageProcessor {
     }
   }
 
+  /**
+   * Captures the current frame from the webcam and processes the image.
+   * @function
+   */
   captureImage() {
     // Capture current frame from webcam
     for (let [key, context] of Object.entries(this.contexts)) {
@@ -108,6 +132,10 @@ class ImageProcessor {
     this.processImage();
   }
 
+  /**
+   * Processes the captured image by applying various transformations and effects.
+   * @function
+   */
   processImage() {
     this.processGrayscaleAndBrightness();
     this.processColorChannels();
@@ -118,6 +146,10 @@ class ImageProcessor {
     this.processThresholdFromColorSpace2();
   }
 
+  /**
+   * Converts the image to grayscale and increases its brightness.
+   * @function
+   */
   processGrayscaleAndBrightness() {
     const ctx = this.contexts.grayscale;
     const imageData = ctx.getImageData(0, 0, 160, 120);
@@ -137,6 +169,10 @@ class ImageProcessor {
     ctx.putImageData(imageData, 0, 0);
   }
 
+  /**
+   * Processes the red, green, and blue color channels of the image.
+   * @function
+   */
   processColorChannels() {
     const channels = ["red", "green", "blue"];
     channels.forEach((channel, index) => {
@@ -155,6 +191,10 @@ class ImageProcessor {
     });
   }
 
+  /**
+   * Applies thresholding to the red, green, and blue color channels.
+   * @function
+   */
   processThresholds() {
     const channels = ["red", "green", "blue"];
     channels.forEach((channel, index) => {
@@ -175,19 +215,27 @@ class ImageProcessor {
     });
   }
 
+  /**
+   * Converts the image to different color spaces (e.g., HSV, YCbCr).
+   * @function
+   */
   processColorSpaces() {
     // Example color space conversions (RGB to HSV and RGB to YCbCr)
     const ctx1 = this.contexts.colorSpace1;
     const ctx2 = this.contexts.colorSpace2;
     const imageData1 = ctx1.getImageData(0, 0, 160, 120);
     const imageData2 = ctx2.getImageData(0, 0, 160, 120);
-(imageData1.data);
+    imageData1.data;
     this.rgbToYCbCr(imageData2.data);
 
     ctx1.putImageData(imageData1, 0, 0);
     ctx2.putImageData(imageData2, 0, 0);
   }
 
+  /**
+   * Applies a threshold to the Value component of the HSV color space.
+   * @function
+   */
   processHSVThreshold() {
     const ctx = this.contexts.thresholdSpace1;
     const threshold = document.getElementById("colorSpace1Threshold").value;
@@ -226,6 +274,10 @@ class ImageProcessor {
     ctx.putImageData(imageData, 0, 0);
   }
 
+  /**
+   * Applies a threshold to the Y component of the YCbCr color space.
+   * @function
+   */
   processThresholdFromColorSpace2() {
     const ctx = this.contexts.thresholdSpace2; // Get context for the threshold output
     const colorSpace2Ctx = this.contexts.colorSpace2; // Get context of YCbCr image
@@ -263,6 +315,11 @@ class ImageProcessor {
     ctx.putImageData(outputImageData, 0, 0);
   }
 
+  /**
+   * Detects faces in the image and draws detection boxes around them.
+   * @async
+   * @function
+   */
   async processFaceDetection() {
     const canvas = this.canvasElements.faceDetection;
     const ctx = this.contexts.faceDetection;
@@ -271,10 +328,7 @@ class ImageProcessor {
     ctx.drawImage(this.webcamVideo, 0, 0, 160, 120);
 
     // Detect faces
-    this.detections = await faceapi.detectAllFaces(
-      canvas,
-      new faceapi.TinyFaceDetectorOptions(),
-    );
+    this.detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions());
 
     // Draw detection boxes
     this.detections.forEach((detection) => {
@@ -285,7 +339,11 @@ class ImageProcessor {
     });
   }
 
-  // Color space conversion helpers
+  /**
+   * Converts RGB data to HSV color space.
+   * @param {Uint8ClampedArray} data - The image data in RGB format.
+   * @function
+   */
   rgbToHSV(data) {
     for (let i = 0; i < data.length; i += 4) {
       const r = data[i] / 255;
@@ -317,16 +375,26 @@ class ImageProcessor {
     }
   }
 
+  /**
+   * Converts HSV values to RGB format.
+   * @param {number} h - Hue value.
+   * @param {number} s - Saturation value.
+   * @param {number} v - Value (brightness) value.
+   * @returns {Object} An object containing r, g, and b values.
+   * @function
+   */
   hsvToRgb(h, s, v) {
     h = (h / 255) * 360;
     s = s / 255;
     v = v / 255;
 
     const c = v * s;
-    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
     const m = v - c;
 
-    let r = 0, g = 0, b = 0;
+    let r = 0,
+      g = 0,
+      b = 0;
 
     if (0 <= h && h < 60) {
       r = c;
@@ -361,6 +429,11 @@ class ImageProcessor {
     return { r, g, b };
   }
 
+  /**
+   * Converts RGB data to YCbCr color space.
+   * @param {Uint8ClampedArray} data - The image data in RGB format.
+   * @function
+   */
   rgbToYCbCr(data) {
     for (let i = 0; i < data.length; i += 4) {
       const r = data[i];
@@ -378,14 +451,13 @@ class ImageProcessor {
     }
   }
 
-  // Face effect methods
+  /**
+   * Applies a grayscale effect to a face region.
+   * @param {Object} faceRegion - The region of the face to apply the effect to.
+   * @function
+   */
   applyGrayscaleFace(faceRegion) {
-    const imageData = this.contexts.webcamRepeat.getImageData(
-      faceRegion.x,
-      faceRegion.y,
-      faceRegion.width,
-      faceRegion.height,
-    );
+    const imageData = this.contexts.webcamRepeat.getImageData(faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height);
     const data = imageData.data;
 
     for (let i = 0; i < data.length; i += 4) {
@@ -395,30 +467,27 @@ class ImageProcessor {
       data[i + 2] = gray;
     }
 
-    this.contexts.faceDetection.putImageData(
-      imageData,
-      faceRegion.x,
-      faceRegion.y,
-    );
+    this.contexts.faceDetection.putImageData(imageData, faceRegion.x, faceRegion.y);
   }
 
+  /**
+   * Applies a YCbCr color space effect to a face region.
+   * @param {Object} faceRegion - The region of the face to apply the effect to.
+   * @function
+   */
   applyColorspaceFace(faceRegion) {
-    const imageData = this.contexts.webcamRepeat.getImageData(
-      faceRegion.x,
-      faceRegion.y,
-      faceRegion.width,
-      faceRegion.height,
-    );
+    const imageData = this.contexts.webcamRepeat.getImageData(faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height);
 
     this.rgbToYCbCr(imageData.data);
 
-    this.contexts.faceDetection.putImageData(
-      imageData,
-      faceRegion.x,
-      faceRegion.y,
-    );
+    this.contexts.faceDetection.putImageData(imageData, faceRegion.x, faceRegion.y);
   }
 
+  /**
+   * Applies a blur effect to a face region.
+   * @param {Object} faceRegion - The region of the face to apply the effect to.
+   * @function
+   */
   applyBlurFace(faceRegion) {
     const ctx = this.contexts.faceDetection;
     const blurRadius = 10;
@@ -438,16 +507,11 @@ class ImageProcessor {
       0,
       0,
       faceRegion.width,
-      faceRegion.height,
+      faceRegion.height
     );
 
     ctx.filter = "none";
-    ctx.clearRect(
-      faceRegion.x,
-      faceRegion.y,
-      faceRegion.width,
-      faceRegion.height,
-    );
+    ctx.clearRect(faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height);
     ctx.drawImage(
       tempCanvas,
       0,
@@ -457,10 +521,15 @@ class ImageProcessor {
       faceRegion.x,
       faceRegion.y,
       faceRegion.width,
-      faceRegion.height,
+      faceRegion.height
     );
   }
 
+  /**
+   * Applies a pixelation effect to a face region.
+   * @param {Object} faceRegion - The region of the face to apply the effect to.
+   * @function
+   */
   applyPixelateFace(faceRegion) {
     const ctx = this.contexts.webcamRepeat;
     const faceDetectionCtx = this.contexts.faceDetection;
@@ -482,7 +551,7 @@ class ImageProcessor {
       0,
       0,
       faceRegion.width,
-      faceRegion.height,
+      faceRegion.height
     );
 
     // Process blocks
@@ -493,7 +562,7 @@ class ImageProcessor {
           x,
           y,
           Math.min(blockSize, faceRegion.width - x),
-          Math.min(blockSize, faceRegion.height - y),
+          Math.min(blockSize, faceRegion.height - y)
         );
 
         // Calculate average RGB values
@@ -529,10 +598,16 @@ class ImageProcessor {
       faceRegion.x,
       faceRegion.y,
       faceRegion.width,
-      faceRegion.height,
+      faceRegion.height
     );
   }
 
+  /**
+   * Handles key press events to apply different face effects.
+   * @param {KeyboardEvent} event - The keyboard event.
+   * @async
+   * @function
+   */
   async handleKeyPress(event) {
     console.log("Pressed", event.key);
     // this.detections = await faceapi.detectAllFaces(this.canvasElements.faceDetection, new faceapi.TinyFaceDetectorOptions());
