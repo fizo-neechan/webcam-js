@@ -489,7 +489,8 @@ class ImageProcessor {
    * @function
    */
   applyBlurFace(faceRegion) {
-    const ctx = this.contexts.faceDetection;
+    const faceDetectionCtx = this.contexts.faceDetection; // Get context for the face detection canvas
+    const ctx = this.contexts.webcamRepeat;
     const blurRadius = 10;
 
     ctx.filter = `blur(${blurRadius}px)`;
@@ -510,9 +511,9 @@ class ImageProcessor {
       faceRegion.height
     );
 
-    ctx.filter = "none";
-    ctx.clearRect(faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height);
-    ctx.drawImage(
+    faceDetectionCtx.filter = "none";
+    faceDetectionCtx.clearRect(faceRegion.x, faceRegion.y, faceRegion.width, faceRegion.height);
+    faceDetectionCtx.drawImage(
       tempCanvas,
       0,
       0,
