@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Image Processing Application</title>
     <link rel="stylesheet" href="css/styles.css" />
-
+    <!-- Face API for face detection -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   </head>
   <body>
     <div class="container">
@@ -32,13 +33,13 @@
         </div>
 
         <div class="slider-container">
-          <label for="colorSpace1Threshold">Color Space 1 Threshold:</label>
+          <label for="colorSpace1Threshold">HSV Threshold:</label>
           <input type="range" id="colorSpace1Threshold" min="0" max="255" value="128" />
           <span id="colorSpace1ThresholdValue">128</span>
         </div>
 
         <div class="slider-container">
-          <label for="colorSpace2Threshold">Color Space 2 Threshold:</label>
+          <label for="colorSpace2Threshold">YCbCr Threshold:</label>
           <input type="range" id="colorSpace2Threshold" min="0" max="255" value="128" />
           <span id="colorSpace2ThresholdValue">128</span>
         </div>
@@ -80,15 +81,15 @@
           <canvas id="blueThresholdCanvas"></canvas>
         </div>
         <div class="cell">
-          <div class="cell-title">Webcam (Repeat)</div>
+          <div class="cell-title">Webcam Repeat</div>
           <canvas id="webcamRepeat"></canvas>
         </div>
         <div class="cell">
-          <div class="cell-title">Color Space 1</div>
+          <div class="cell-title">HSV</div>
           <canvas id="colorSpace1"></canvas>
         </div>
         <div class="cell">
-          <div class="cell-title">Color Space 2</div>
+          <div class="cell-title">YCbCr</div>
           <canvas id="colorSpace2"></canvas>
         </div>
         <div class="cell">
@@ -96,17 +97,17 @@
           <canvas id="faceDetection"></canvas>
         </div>
         <div class="cell">
-          <div class="cell-title">Threshold Space 1</div>
+          <div class="cell-title">HSV Threshold</div>
           <canvas id="thresholdSpace1"></canvas>
         </div>
         <div class="cell">
-          <div class="cell-title">Threshold Space 2</div>
+          <div class="cell-title">YCbCr Threshold</div>
           <canvas id="thresholdSpace2"></canvas>
         </div>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <script src="js/ImageProcessor.js" defer></script>
-    <script src="js/main.js" defer></script>
+
+    <!-- Import modular scripts -->
+    <script type="module" src="js/index.js"></script>
   </body>
 </html>
